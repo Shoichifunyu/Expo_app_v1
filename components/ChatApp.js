@@ -4,12 +4,12 @@ import styles from './styles.js'
 import { View, Text ,Button, TextInput, AppRegistry} from 'react-native';
 import socketio from 'socket.io-client';
 // import RNPickerSelect from 'react-native-picker-select';
-// import { RadioButton } from 'react-native-paper';
+import { RadioButton } from 'react-native-paper';
 
 class ChatForm extends React.Component {
     constructor (props) {
         super(props)
-        this.socket = socketio('https://6f5f-113-149-235-78.ap.ngrok.io', {
+        this.socket = socketio('https://c189-113-149-235-78.ap.ngrok.io', {
             transports: ['websocket'],
             cors: {
               methods: ['GET', 'POST'],
@@ -43,14 +43,9 @@ class ChatForm extends React.Component {
             message_slct_list: this.state.message_slct_list,
             timestamp
         })
-        this.socket.emit('buy_item', {
-            buy_item: this.state.buy_item,
-            timestamp
-        })
         this.setState({message: ''})
         this.setState({message_s: ''})
         this.setState({message_slct_list: ''})
-        this.setState({buy_item: ''})
     }
 
     render () {
@@ -72,10 +67,9 @@ class ChatForm extends React.Component {
 export default class ChatApp extends React.Component {
     constructor (props) {
         super(props)
-        this.socket = socketio('https://6f5f-113-149-235-78.ap.ngrok.io', {
+        this.socket = socketio('https://c189-113-149-235-78.ap.ngrok.io', {
             transports: ['websocket'],
             cors: {
-              origin: 'chat_prd_v2://com.chat_prd_v2',
               methods: ['GET', 'POST'],
               allowedHeaders: ['my-custom-header'],
               credentials: true
@@ -87,9 +81,11 @@ export default class ChatApp extends React.Component {
             // logs_slct_s: [],
             // logs_reply_slcted_action: [],
             message_slcted_action: '',
-            selectedValue: ''
+            selectedValue: '',
+            checked: '',
+            buy_item: ''
         };
-        // this.handleSelectChange = this.handleSelectChange.bind(this);
+        this.handleSelectChange = this.handleSelectChange.bind(this);
         this.send = this.send.bind(this);
     }
 
@@ -102,6 +98,11 @@ export default class ChatApp extends React.Component {
             console.log(obj)
             logs2.unshift(obj)
             this.setState({logs: logs2})
+            this.socket.emit('buy_item', {
+                buy_item: obj.message,
+                timestamp: new Date().getTime()
+            })
+            this.setState({buy_item: ''})
         });
         this.socket.on('chat', (obj) => {
             console.log("pass10")
@@ -126,6 +127,16 @@ export default class ChatApp extends React.Component {
             console.log(reply_slcted_action)
             logs_s4.unshift(reply_slcted_action)
             this.setState({logs: logs_s4})
+            // const timestamp = new Date().getTime();
+            // this.state.logs.map((e) => {
+            // if (e.key.indexOf('chat_before_key_') === 0) {
+            //     this.socket.emit('buy_item', {
+            //         buy_item: e.message,
+            //         timestamp
+            //     })
+            // }
+            // })
+            // this.setState({buy_item: ''})
         });
     };
 
@@ -148,7 +159,8 @@ export default class ChatApp extends React.Component {
         console.log(this.state.logs)
         let sortedMessages = this.state.logs.sort((a, b) => b.timestamp - a.timestamp);
         console.log("print:"+sortedMessages)
-        let items;
+        const { checked } = this.state
+
         // sortedMessages.map((e) => {
         //     if (e.key.indexOf('slct_list_key_') === 0) { 
         //     items = ([
@@ -165,47 +177,51 @@ export default class ChatApp extends React.Component {
             messages.push(<View key={e.key} style={styles.log}>
                         <Text style={styles.msg}>{e.message}</Text>
                     </View>)
-            console.log("messages1:")
-            console.dir(messages)
-        }
-        if (e.key.indexOf('chat_key_') === 0) {
+        } else if (e.key.indexOf('chat_key_') === 0) {
             messages.push(<View key={e.key} style={styles.log}>
                         <Text style={styles.msg}>{e.message_s}</Text>
                     </View>)
-            console.log("messages2:")
-            console.dir(messages)
-        }
-        if (e.key.indexOf('slcted_action_key_') === 0) {
+        } else if (e.key.indexOf('slcted_action_key_') === 0) {
             messages.push(<View key={e.key} style={styles.log}>
                         <Text style={styles.msg}>{e.message_slcted_action}</Text>
                     </View>)
-            console.log("messages3:")
-            console.dir(messages)
-        }
-        if (e.key.indexOf('slct_list_key_') === 0) {
+        } else if (e.key.indexOf('slct_list_key_') === 0) {
             console.log(JSON.stringify(e.item01))
             messages.push(<View key={e.key} style={styles.log}>
-                    {/* <RadioButton
+                    <RadioButton.Item
                         value={e.item01}
-                        status={ checked === 'first' ? 'checked' : 'unchecked' }
-                        onPress={() => handleSelectChange(e.item01)}
+                        label={e.item01}
+                        status={ checked === e.item01 ? 'checked' : 'unchecked' }
+                        onPress={() => {
+                            this.setState({ checked: e.item01 });
+                            this.handleSelectChange(e.item01)
+                        }
+                    }
                     />
-                    <RadioButton
+                    <RadioButton.Item
                         value={e.item02}
-                        status={ checked === 'second' ? 'checked' : 'unchecked' }
-                        onPress={() => handleSelectChange(e.item02)}
+                        label={e.item02}
+                        status={ checked === e.item02 ? 'checked' : 'unchecked' }
+                        onPress={() => {
+                            this.setState({ checked: e.item02 });
+                            this.handleSelectChange(e.item02)
+                        }
+                    }
                     />
-                    <RadioButton
+                    <RadioButton.Item
                         value={e.item03}
-                        status={ checked === 'second' ? 'checked' : 'unchecked' }
-                        onPress={() => handleSelectChange(e.item03)}
-                    /> */}
+                        label={e.item03}
+                        status={ checked === e.item03 ? 'checked' : 'unchecked' }
+                        onPress={() => {
+                            this.handleSelectChange(e.item03)
+                            this.setState({ checked: e.item03 });
+                        }
+                    }
+                    />
+                    <Button title="選択" onPress={() => this.send()} />
                     </View>)
-            console.log("messages4:")
-            console.dir(messages)
         }
     })
-    console.log('%o',messages)
 
     // let messages_ext = JSON.parse(messages)
     // console.log("messages_ext:"+messages_ext)
