@@ -12,6 +12,7 @@ class ChatForm extends React.Component {
         this.socket = socketio('https://c189-113-149-235-78.ap.ngrok.io', {
             transports: ['websocket'],
             cors: {
+              origin: 'exp://192.168.11.14:19000',
               methods: ['GET', 'POST'],
               allowedHeaders: ['my-custom-header'],
               credentials: true
@@ -70,6 +71,7 @@ export default class ChatApp extends React.Component {
         this.socket = socketio('https://c189-113-149-235-78.ap.ngrok.io', {
             transports: ['websocket'],
             cors: {
+              origin: 'exp://192.168.11.14:19000',
               methods: ['GET', 'POST'],
               allowedHeaders: ['my-custom-header'],
               credentials: true
