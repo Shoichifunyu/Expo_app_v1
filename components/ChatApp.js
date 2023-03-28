@@ -1,7 +1,8 @@
 import React from 'react'
 // import ReactDOM from 'react-dom'
 import styles from './styles.js'
-import { View, Text ,Button, TextInput, AppRegistry} from 'react-native';
+import { View, Text ,Button, TextInput, ScrollView, TouchableOpacity} from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import socketio from 'socket.io-client';
 // import RNPickerSelect from 'react-native-picker-select';
 import { RadioButton } from 'react-native-paper';
@@ -18,7 +19,7 @@ class ChatForm extends React.Component {
               credentials: true
             }
         });
-        this.state = { e: '', message: '', message_s: '', message_slct_list: '', buy_item: ''} 
+        this.state = { e: '', message: '', message_s: '', message_slct_list: '', buy_item: ''}
     }
     messageChanged (e) {
         const message = e;
@@ -162,34 +163,34 @@ export default class ChatApp extends React.Component {
         let sortedMessages = this.state.logs.sort((a, b) => b.timestamp - a.timestamp);
         console.log("print:"+sortedMessages)
         const { checked } = this.state
-
-        // sortedMessages.map((e) => {
-        //     if (e.key.indexOf('slct_list_key_') === 0) { 
-        //     items = ([
-        //         { label: e.item01, value: e.item01 },
-        //         { label: e.item02, value: e.item02 },
-        //         { label: e.item03, value: e.item03 }
-        //     ])
-        // }
-        // });
-
         let messages = [];
+        const copyText = async (text) => {
+            await Clipboard.setStringAsync(text.replace(/"/g, ""));
+        };
+
         sortedMessages.map((e) => {
         if (e.key.indexOf('chat_before_key_') === 0) {
-            messages.push(<View key={e.key} style={styles.log}>
+            messages.push(<ScrollView key={e.key} style={styles.log}>
+                        <TouchableOpacity onLongPress={() => copyText(JSON.stringify(e.message))}>
                         <Text style={styles.msg}>{e.message}</Text>
-                    </View>)
+                        </TouchableOpacity>
+                    </ScrollView>)
         } else if (e.key.indexOf('chat_key_') === 0) {
-            messages.push(<View key={e.key} style={styles.log}>
+            messages.push(<ScrollView key={e.key} style={styles.log}>
+                        <TouchableOpacity onLongPress={() => copyText(JSON.stringify(e.message_s))}>
                         <Text style={styles.msg}>{e.message_s}</Text>
-                    </View>)
+                        </TouchableOpacity>
+                    </ScrollView>)
         } else if (e.key.indexOf('slcted_action_key_') === 0) {
-            messages.push(<View key={e.key} style={styles.log}>
+            messages.push(<ScrollView key={e.key} style={styles.log}>
+                        <TouchableOpacity onLongPress={() => copyText(JSON.stringify(e.message_slcted_action))}>
                         <Text style={styles.msg}>{e.message_slcted_action}</Text>
-                    </View>)
+                        </TouchableOpacity>
+                    </ScrollView>)
         } else if (e.key.indexOf('slct_list_key_') === 0) {
             console.log(JSON.stringify(e.item01))
-            messages.push(<View key={e.key} style={styles.log}>
+            console.log(e.item01)
+            messages.push(<ScrollView key={e.key} style={styles.log}>
                     <RadioButton.Item
                         value={e.item01}
                         label={e.item01}
@@ -221,7 +222,7 @@ export default class ChatApp extends React.Component {
                     }
                     />
                     <Button title="選択" onPress={() => this.send()} />
-                    </View>)
+                    </ScrollView>)
         }
     })
 
@@ -232,7 +233,9 @@ export default class ChatApp extends React.Component {
             <View>
                 <Text style={styles.h1}>リアルタイムチャット</Text>
                 <ChatForm />
+            <ScrollView>
                 {messages}
+            </ScrollView>
             </View>
         )
     }
