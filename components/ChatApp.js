@@ -19,7 +19,7 @@ export function ChatForm(props) {
 
     useEffect(() => {
         console.log('Connecting..');
-        socketRef.current = io('https://29b7-113-149-235-78.ap.ngrok.io'
+        socketRef.current = io('https://e833-113-149-235-78.ngrok-free.app'
         , {
             transports: ['websocket'],
             cors: {
@@ -96,7 +96,7 @@ export function ChatForm(props) {
         setMessage(prevMessage_s => [...prevMessage_s, msg]);
         // setMessage(prevMessage_slct_list => [...prevMessage_slct_list, slct_list]);
         setMessage('');
-        // setMessage_s('');
+        setMessage_s('');
         // setMessage_slct_list('');
 
         // useEffect(() => {
@@ -137,12 +137,13 @@ export default function ChatApp(props){
     const [message_slcted_action, setMessage_slcted_action] = useState('');
     const [Editing, setEditing] = useState(false);
     const [message, setMessage] = useState([]);
+    const [count, setCount] = useState(0);
     const socketRef = useRef();
     const [buy_item, isEditing, e, message_s, message_slct_list, s, inputValue] = useState('');
 
     useEffect(() => {
         console.log('Connecting..');
-        socketRef.current = io('https://29b7-113-149-235-78.ap.ngrok.io'
+        socketRef.current = io('https://e833-113-149-235-78.ngrok-free.app'
         , {
             transports: ['websocket'],
             cors: {
@@ -159,7 +160,9 @@ export default function ChatApp(props){
             console.log("pass1")
             // const logs2 = logs
             obj = JSON.parse(obj)
-            obj.key = 'chat_before_key_' + (logs.length + 1)
+            obj.key = 'chat_before_key_' + (logs.length + 1);
+            setCount((prevCount) => prevCount + 1);
+            obj.count = count
             console.log(obj)
             // logs.unshift(obj)
             setLogs(prevLogs => [...prevLogs, obj]);
@@ -170,6 +173,8 @@ export default function ChatApp(props){
             // console.log("aaa:"+ logs[0].key)
         });
         socketRef.current.on('chat', obj => {
+            setCount((prevCount) => prevCount + 1);
+            obj.count = count;
             console.log("pass10")
             // const logs_s2 = logs
             obj.key = 'chat_key_' + (logs.length + 1)
@@ -271,8 +276,16 @@ export default function ChatApp(props){
         // const dispmMessage = logs;
         // let sortedMessages = useState([]);
         // setSortedMessages(dispmMessage);
+        let sortedMessages = props.logs?.sort(function(a, b){if (a.count > b.count){
+            return -1;
+          }else if (a.count < b.count){
+            return 1;
+          }else{
+            return 0;
+          }
+        });
         
-        let sortedMessages = props.logs?.sort((a, b) => b?.timestamp - a?.timestamp);
+        // sortedMessages.sort((a, b) => b.timestamp - a.timestamp);
         // console.log(sortedMessages)
         // const { checked } = state
         // logs.map((e) => {
