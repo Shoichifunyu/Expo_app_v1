@@ -1,13 +1,16 @@
 import React from 'react'
-const {useEffect, useMemo, useRef, useState} = React
+const {useEffect, useMemo, useRef, useState, useCallback} = React
 // import ReactDOM from 'react-dom'
 import styles from './styles.js'
-import { View, Text ,Button, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { Keyboard, View, Text ,Button, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import io from 'socket.io-client';
 import _ from 'lodash';
+// import ContentEditable from 'react-contenteditable'
+import { EditText, EditTextarea } from 'react-edit-text';
 // import RNPickerSelect from 'react-native-picker-select';
 import { RadioButton } from 'react-native-paper';
+import Checkbox from 'expo-checkbox';
 
 export function ChatForm(props) {
     const [message, setMessage] = useState('');
@@ -19,7 +22,7 @@ export function ChatForm(props) {
 
     useEffect(() => {
         console.log('Connecting..');
-        socketRef.current = io('https://e833-113-149-235-78.ngrok-free.app'
+        socketRef.current = io('https://c991-113-149-235-78.ngrok-free.app'
         , {
             transports: ['websocket'],
             cors: {
@@ -77,10 +80,10 @@ export function ChatForm(props) {
             timestamp
         };
 
-        // const slct_list = {
-        //     message_slct_list,
-        //     timestamp
-        // };
+        const slct_list = {
+            message,
+            timestamp
+        };
 
         // const sMessage = {
         //     text: text,
@@ -91,13 +94,13 @@ export function ChatForm(props) {
 
         socketRef.current.emit('chat_before', cMessage);
         socketRef.current.emit('chat', msg);
-        // socketRef.current.emit('select_list', slct_list);
+        socketRef.current.emit('select_list', slct_list);
         setMessage(prevMessage => [...prevMessage, cMessage]);
         setMessage(prevMessage_s => [...prevMessage_s, msg]);
-        // setMessage(prevMessage_slct_list => [...prevMessage_slct_list, slct_list]);
+        setMessage(prevMessage_slct_list => [...prevMessage_slct_list, slct_list]);
         setMessage('');
         setMessage_s('');
-        // setMessage_slct_list('');
+        setMessage_slct_list('');
 
         // useEffect(() => {
         //     socket.emit('chat_before', {
@@ -137,13 +140,17 @@ export default function ChatApp(props){
     const [message_slcted_action, setMessage_slcted_action] = useState('');
     const [Editing, setEditing] = useState(false);
     const [message, setMessage] = useState([]);
-    const [count, setCount] = useState(0);
+    const [tappedValue, setTappedValue] = useState('');
+    let [count, setCount] = useState(0);
     const socketRef = useRef();
-    const [buy_item, isEditing, e, message_s, message_slct_list, s, inputValue] = useState('');
+    const [message_s, setMessage_s] = useState('');
+    const [buy_item, isEditing, e, message_slct_list, s, inputValue] = useState('');
+    const [handleTapValue, setHandleTapValue] = useState('');
+    const [ckdflg, setCkdflg] = useState(false);
 
     useEffect(() => {
         console.log('Connecting..');
-        socketRef.current = io('https://e833-113-149-235-78.ngrok-free.app'
+        socketRef.current = io('https://c991-113-149-235-78.ngrok-free.app'
         , {
             transports: ['websocket'],
             cors: {
@@ -160,81 +167,123 @@ export default function ChatApp(props){
             console.log("pass1")
             // const logs2 = logs
             obj = JSON.parse(obj)
-            obj.key = 'chat_before_key_' + (logs.length + 1);
-            setCount((prevCount) => prevCount + 1);
+            // setCount((prevCount) => prevCount + 1);
+            count += 1
             obj.count = count
+            obj.key = 'chat_before_key_' + (count + 1);
+            obj.buy_key = 'slcted_action_key_' + new Date().getTime();
             console.log(obj)
             // logs.unshift(obj)
-            setLogs(prevLogs => [...prevLogs, obj]);
+            setLogs((prevLogs) => [...prevLogs, obj]);
             socketRef.current.emit('buy_item', {
+                item_key: obj.buy_key,
                 buy_item: obj.message,
+                flg: false,
                 timestamp: new Date().getTime()
             })
             // console.log("aaa:"+ logs[0].key)
         });
         socketRef.current.on('chat', obj => {
-            setCount((prevCount) => prevCount + 1);
+            // setCount((prevCount) => prevCount + 1);
+            count += 1
             obj.count = count;
             console.log("pass10")
             // const logs_s2 = logs
-            obj.key = 'chat_key_' + (logs.length + 1)
+            obj.key = 'chat_key_' + (count + 1)
             console.log(obj)
             // logs.unshift(obj)
-            setLogs(prevLogs => [...prevLogs, obj]);
+            setLogs((prevLogs) => [...prevLogs, obj]);
         });
-        // socketRef.current.on('select_list', slct_list => {
-        //     console.log(slct_list)
-        //     const obj = JSON.parse(slct_list);
-        //     const logs_s3 = logs.slice()
-        //     obj.key = 'slct_list_key_' + (logs.length + 1)
-        //     console.log(obj)
-        //     logs_s3.push(obj)
-        //     setLogs(logs_s3);
-        // });
-        // socketRef.current.on('reply_slcted_action', reply_slcted_action => {
-        //     const logs_s4 = [...logs]
-        //     reply_slcted_action.key = 'slcted_action_key_' + (logs.length + 1)
-        //     console.log(reply_slcted_action)
-        //     logs_s4.unshift(reply_slcted_action)
-        //     setLogs(logs_s4);
-        // });
+        socketRef.current.on('select_list', slct_list => {
+            const obj = JSON.parse(slct_list);
+            // setCount((prevCount) => prevCount + 1);
+            count += 1
+            obj.count = count;
+            console.log(slct_list)
+            obj.key = 'slct_list_key_' + (count + 1)
+            console.log(obj)
+            setLogs((prevLogs) => [...prevLogs, obj]);
+        });
+        socketRef.current.on('reply_slcted_action_format', reply_slcted_action_format => {
+            count += 1
+            reply_slcted_action_format.count = count;
+            if (reply_slcted_action_format.key === undefined) {
+                reply_slcted_action_format.key = 'slcted_action_format_key_' + (count + 1)
+            }
+            console.log(reply_slcted_action_format)
+            setLogs((prevLogs) => [...prevLogs, reply_slcted_action_format]);
+        });
+        socketRef.current.on('reply_slcted_action', reply_slcted_action => {
+            count += 1
+            reply_slcted_action.count = count;
+            if (reply_slcted_action.flg === undefined) {
+                reply_slcted_action.flg = false;
+            }
+            if (reply_slcted_action.key === undefined) {
+                reply_slcted_action.key = 'slcted_action_key_' + new Date().getTime()
+            }
+            console.log(reply_slcted_action)
+            setLogs((prevLogs) => [...prevLogs, reply_slcted_action]);
+        });
 
         return () => {
             console.log('Disconnecting..');
             socketRef.current.disconnect();
         };
-    }, [logs]);
+    }, []);
 
+    useEffect(() => {
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+          TextInput.State.currentlyFocusedInput()?.blur();
+        });
+
+    // return () => {
+    //     keyboardDidHideListener.remove();
+    //     };
+    }, []);
+    
 
     const handleSelectChange = (event) => {
         setSelectedValue(event)
     };
 
+    
+
     const send =() => {
-        const timestamp = () => new Date().getTime(); // 現在のタイムスタンプを取
-        const slctAction = () => {
-            message_slcted_action,
-            timestamp
+        const slctAction = {
+            message_slcted_action: selectedValue,
+            timestamp: new Date().getTime()
         }
-        socketRef.current.emit('slcted_action',slctAction);
+        socketRef.current.emit('slcted_action', slctAction);
         setMessage_slcted_action('');
     };
 
+    const Blursend =() => {
+        console.log("tappedValue:"+tappedValue)
+        const tappedMessage = {
+            message: tappedValue,
+            timestamp: new Date().getTime()
+        };
+        socketRef.current.emit('chat_before', tappedMessage);
+        setMessage('');
+        setEditing(false);
+    };
+
     
-    const EditableText = ({text}) => {
+    const EditableText = ({tappedValue}) => {
         if (Editing) {
             return (
             <TextInput
-                defaultValue={text}
-                value={inputValue}
-                onChangeText={() => _handleTextChange}
-                onBlur={() => setEditing(false)}
-            />
+                defaultValue={tappedValue}
+                onChangeText={handleTapChange}
+                onBlur={() => {blursend()}
+                }
+            >{tappedValue}</TextInput>
             );
         }
         return (
-            <TouchableOpacity onPress={() => copyText(JSON.stringify(text))} onLongPress={() => setEditing(true)}>
-            <Text>{text}</Text>
+            <TouchableOpacity onPress={() => copyText(JSON.stringify(tappedValue))} onLongPress={() => setEditing(true)}>
+            <Text>{tappedValue}</Text>
             </TouchableOpacity>
         );
         };
@@ -267,6 +316,22 @@ export default function ChatApp(props){
     // この条件に合致するプロパティを削除する
     const isEmpty = val => val === '' || val === null || val === undefined;
 
+
+    
+    
+
+    const handleTapSubmit = (k) => {
+       
+        // logs = logs.map((value) => (value.key === k ? {"count":value.count, "key": value.key, "message_slcted_action":aaaa, "timestamp": value.timestamp} : value))
+        
+        // function update(k, aaaa) {
+        
+    };
+
+    // const logsChange = (handleTapKey, handleTapValue) => {
+    //     
+    // }
+
     const MessageDiv = props => {
         // const { logs } = props;
         if (props.logs !== undefined) {
@@ -292,6 +357,18 @@ export default function ChatApp(props){
         for (let i=0;i< sortedMessages.length; i++){
             console.log("bbb:"+sortedMessages[i])
         }
+
+
+        // const handleTapChange = (k, newText) => {
+        //     // const handleTapKey = k;
+        //     // const tapchanged = e;
+            
+        //     // console.log("e:"+tapchanged)
+        //     setTimeout(() => {
+            
+        //     }, 3000);
+            
+        // }
         
         // const actualMessages = removeObjectBy(sortedMessages, isEmpty);
         // actualMessages.map((e) => {
@@ -305,74 +382,104 @@ export default function ChatApp(props){
                                 // <Text style={styles.msg}>{e[loop].message}</Text>
                                 {/* </TouchableOpacity> */}
                             // </ScrollView>)
+        let image = sortedMessages.map((e) => {
+            const [text, setText] = useState('');
 
-        let image = sortedMessages.map(e => {
+            const handleTapChange =  _.debounce(
+                (k, text) => {
+                setLogs(prevLogs => prevLogs.map(
+                    (value) => (
+                        value.key === e.key ? {"count":value.count, "key": value.key + "_upd", "message_slcted_action":text, "timestamp": value.timestamp} : value)))
+                let msg = {
+                    item_key: k,
+                    buy_item: text,
+                    timestamp: new Date().getTime()
+                };
+                logs.map(
+                    (value) => (
+                        console.log(value)))
+                socketRef.current.emit('buy_item', msg)
+              }
+              ,3000)
+        
+            const checkedCheckedBox = (k, f) => {
+                setLogs((prevLogs) => prevLogs.map((value) => (
+                value.key === k ? {"count":value.count, "key": value.key , "flg": f, "message_slcted_action":value.message_slcted_action, "timestamp": value.timestamp} : value)))
+                let msg = {
+                    item_key: k,
+                    flg: f,
+                    timestamp: new Date().getTime()
+                };
+                socketRef.current.emit('buy_item', msg)
+            }
+            
             console.log(e);
-            if (e.key.indexOf('chat_before_key_') === 0) {
-                return (<ScrollView key={e.key} style={styles.log}>
+            const ts = new Date().getTime()
+            if (e.key.indexOf('slcted_action_format_key_') === 0) {
+                const flg = e.flg
+                console.log("flg"+flg)
+                return (<ScrollView key={e.key+ts} style={styles.log}>
+                            {/* <Text style={styles.msg}>{e.message_slcted_action}</Text> */}
+                            {/* <TextInput style={styles.msg} blurOnSubmit={false} value={e.message_slcted_action} onChangeText={(inputText) =>{
+                                setText(inputText)
+                                handleTapChange(e.key, inputText)}}/> */}
+                            <TouchableOpacity onLongPress={() => copyText(JSON.stringify(e.message_slcted_action))}>
+                            <Text style={styles.msg}>{e.message_slcted_action}</Text>
+                            </TouchableOpacity>
+                        </ScrollView>)
+            } else if (e.key.indexOf('slcted_action_key_') === 0) {
+                const flg = e.flg
+                console.log("flg"+flg)
+                return (<ScrollView key={e.key+ts} style={styles.log}>
+                            {/* <Text style={styles.msg}>{e.message_slcted_action}</Text> */}
+                            {/* <TextInput style={styles.msg} blurOnSubmit={false} value={e.message_slcted_action} onChangeText={(inputText) =>{
+                                setText(inputText)
+                                handleTapChange(e.key, inputText)}}/> */}
+                            <Checkbox title={e.message_slcted_action} value={flg} onValueChange={() => {
+                                setCkdflg(!ckdflg)
+                                checkedCheckedBox(e.key, !ckdflg)}}/>
+                            <TouchableOpacity onLongPress={() => copyText(JSON.stringify(e.message_slcted_action))}>
+                            <Text style={styles.msg}>{"\n"}{e.message_slcted_action}</Text>
+                            </TouchableOpacity>
+                        </ScrollView>)
+            } else if (e.key.indexOf('chat_before_key_') === 0) {
+                return (<ScrollView key={e.key+ts} style={styles.log}>
                                 <TouchableOpacity onPress={() => copyText(JSON.stringify(e.message))}>
+                                {/* <Text style={styles.msg}>{e.message}</Text> */}
                                 <Text style={styles.msg}>{e.message}</Text>
                                 </TouchableOpacity>
                             </ScrollView>)
             } else if (e.key.indexOf('chat_key_') === 0) {
-                return (<ScrollView key={e.key} style={styles.log}>
-                            {/* <EditableText style={styles.msg} text={e.message_s}></EditableText> */}
+                return (<ScrollView key={e.key+ts} style={styles.log}>
+                            {/* `<ContentEditable html= {<Text>${e.message_s}</Text>} onBlur={Blursend} onChange={HandleTapChange} />` */}
+                            {/* <EditableText style={styles.msg} tappedValue={e.message_s}>r</EditableText> */}
                             <TouchableOpacity onPress={() => copyText(JSON.stringify(e.message_s))}>
                             <Text style={styles.msg}>{e.message_s}</Text>
                             </TouchableOpacity>
                         </ScrollView>)
-            // } else if (e.key.indexOf('slcted_action_key_') === 0) {
-            //     return (<ScrollView key={e.key} style={styles.log}>
-            //                 <TouchableOpacity onLongPress={() => copyText(JSON.stringify(e.message_slcted_action))}>
-            //                 <Text style={styles.msg}>{e.message_slcted_action}</Text>
-            //                 </TouchableOpacity>
-            //             </ScrollView>)
-            // } else if (e.key.indexOf('slct_list_key_') === 0) {
-            //     console.log(JSON.stringify(e.item01))
-            //     console.log(e.item01)
-            //     return (<></>)
-                // return (<ScrollView key={e.key} style={styles.log}>
-                //         <RadioButton.Item
-                //             value={e.item01}
-                //             label={e.item01}
-                //             status={ checked === e.item01 ? 'checked' : 'unchecked' }
-                //             onPress={() => {
-                //                 setChecked(e.item01)
-                //                 handleSelectChange(e.item01)
-                //             }
-                //         }
-                //         />
-                //         <RadioButton.Item
-                //             value={e.item02}
-                //             label={e.item02}
-                //             status={ checked === e.item02 ? 'checked' : 'unchecked' }
-                //             onPress={() => {
-                //                 setChecked(e.item02)
-                //                 handleSelectChange(e.item02)
-                //             }
-                //         }
-                //         />
-                //         <RadioButton.Item
-                //             value={e.item03}
-                //             label={e.item03}
-                //             status={ checked === e.item03 ? 'checked' : 'unchecked' }
-                //             onPress={() => {
-                //                 setChecked(e.item03)
-                //                 handleSelectChange(e.item03)
-                //             }
-                //         }
-                //         />
-                //         <Button title="選択" onPress={() => send()} />
-                        // </ScrollView>)
-        //     }
-        // })
-    // let messages_ext = JSON.parse(messages)
-    // console.log("messages_ext:"+messages_ext)
-                }
-            })
+            } else if (e.key.indexOf('slct_list_key_') === 0) {                   
+                    return (<ScrollView key={e.key+ts} style={styles.log}>
+                            <RadioButton.Group>
+                           {e.item.map((f) => (
+                            <RadioButton.Item
+                            key={f}
+                            value={f}
+                            label={f}
+                            status={ checked === f ? 'checked' : 'unchecked' }
+                            onPress={() => {
+                                    setChecked(f)
+                                    handleSelectChange(f)
+                                    }}
+                            />))}
+                            </RadioButton.Group>
+                            <Button title="選択" onPress={() => send()} />
+                            </ScrollView>)
+            }
+        })
     return image
     }
 }
+    
 
     return (
         <View>
