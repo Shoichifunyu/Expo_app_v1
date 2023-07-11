@@ -16,7 +16,7 @@ export function ChatForm(props) {
 
     useEffect(() => {
         console.log('Connecting..');
-        socketRef.current = io("https://ec2-54-204-165-145.compute-1.amazonaws.com"
+        socketRef.current = io("http://ec2-54-204-165-145.compute-1.amazonaws.com:3000/"
         , {
             transports: ['websocket'],
             cors: {
@@ -108,7 +108,7 @@ export default function ChatApp(props){
 
     useEffect(() => {
         console.log('Connecting..');
-        socketRef.current = io("https://ec2-54-204-165-145.compute-1.amazonaws.com"
+        socketRef.current = io("http://ec2-54-204-165-145.compute-1.amazonaws.com:3000/"
         , {
             transports: ['websocket'],
             cors: {
@@ -285,12 +285,12 @@ export default function ChatApp(props){
     }
 }
     return (
-        <View>
+        <ScrollView>
             <Text style={styles.h1}>リアルタイムチャット</Text>
             <ChatForm />
         <ScrollView>
             <MessageDiv logs = {logs}/>
         </ScrollView>
-        </View>
+        </ScrollView>
     )
 }
