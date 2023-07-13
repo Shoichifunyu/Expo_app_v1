@@ -16,7 +16,7 @@ export function ChatForm(props) {
 
     useEffect(() => {
         console.log('Connecting..');
-        socketRef.current = io("http://ec2-54-204-165-145.compute-1.amazonaws.com:3000/"
+        socketRef.current = io("https://ec2-54-204-165-145.compute-1.amazonaws.com:443/"
         , {
             transports: ['websocket'],
             cors: {
@@ -108,7 +108,7 @@ export default function ChatApp(props){
 
     useEffect(() => {
         console.log('Connecting..');
-        socketRef.current = io("http://ec2-54-204-165-145.compute-1.amazonaws.com:3000/"
+        socketRef.current = io("https://ec2-54-204-165-145.compute-1.amazonaws.com:443/"
         , {
             transports: ['websocket'],
             cors: {
