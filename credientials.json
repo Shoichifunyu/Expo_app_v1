@@ -1,0 +1,7 @@
+{
+    "android": {
+      "keystore": {
+        "keystorePath": "./components/server.crt"
+      }
+    }
+}
