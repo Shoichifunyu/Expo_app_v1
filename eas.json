@@ -19,10 +19,6 @@
     "production": {
       "ios": {
         "resourceClass": "m-medium"
-      },
-      "android":{
-        "distribution": "internal",
-        "credentialsSource": "local"
       }
     }
   },
