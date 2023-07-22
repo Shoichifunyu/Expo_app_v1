@@ -7,6 +7,9 @@ import io from 'socket.io-client';
 import _ from 'lodash';
 import { RadioButton } from 'react-native-paper';
 import Checkbox from 'expo-checkbox';
+import { ExpoConfig, ConfigContext } from '@expo/config'
+// import RNFetchBlob from 'react-native-blob-util'; // or react-native-blob-util
+import * as FileSystem from 'expo-file-system';
 
 export function ChatForm(props) {
     const [message, setMessage] = useState('');
@@ -22,11 +25,13 @@ export function ChatForm(props) {
             cors: {
                 // 適宜変更
             //   origin: ['http://192.168.11.14:19006','http://localhost:19006'],
-              origin: 'exp://eb-cq3.funyu.chat-prd-v4.exp.direct:80',
+              origin: 'exp://192.168.138.110:19000',
               methods: ['GET', 'POST'],
               allowedHeaders: ['my-custom-header'],
               credentials: true
-            }
+            },
+            key: FileSystem.readAsStringAsync("./server.key"),
+            cert: FileSystem.readAsStringAsync("./server.crt")
         }
         );
         return () => {
@@ -83,7 +88,8 @@ export function ChatForm(props) {
         <TextInput
         style={styles.input}
         onChangeText={messageChanged}
-        >{message}</TextInput>
+        value={message}
+        />
         <Button title="送信" onPress={send}/>
     </View>
     )
@@ -106,6 +112,7 @@ export default function ChatApp(props){
     const [handleTapValue, setHandleTapValue] = useState('');
     const [ckdflg, setCkdflg] = useState(false);
 
+
     useEffect(() => {
         console.log('Connecting..');
         socketRef.current = io("https://ec2-54-204-165-145.compute-1.amazonaws.com:443/"
@@ -114,13 +121,15 @@ export default function ChatApp(props){
             cors: {
                 // 適宜変更
             //   origin: ['http://192.168.11.14:19006','http://localhost:19006'],
-                origin: 'exp://eb-cq3.funyu.chat-prd-v4.exp.direct:80',
+                origin: 'exp://192.168.138.110:19000',
                 methods: ['GET', 'POST'],
                 allowedHeaders: ['my-custom-header'],
                 credentials: true
-            }
+            },
+            key: FileSystem.readAsStringAsync("./server.key"),
+            cert: FileSystem.readAsStringAsync("./server.crt")
         }
-        )
+        );
         socketRef.current.on('chat_before', obj => {
             console.log("pass1")
             obj = JSON.parse(obj)
@@ -243,9 +252,9 @@ export default function ChatApp(props){
                 const flg = e.flg
                 console.log("flg"+flg)
                 return (<ScrollView key={e.key+ts} style={styles.log}>
-                            <Checkbox title={e.message_slcted_action} value={flg} onValueChange={() => {
+                            {/* <Checkbox title={e.message_slcted_action} value={flg} onValueChange={() => {
                                 setCkdflg(!ckdflg)
-                                checkedCheckedBox(e.key, !ckdflg)}}/>
+                                checkedCheckedBox(e.key, !ckdflg)}}/> */}
                             <TouchableOpacity onLongPress={() => copyText(JSON.stringify(e.message_slcted_action))}>
                             <Text style={styles.msg}>{"\n"}{e.message_slcted_action}</Text>
                             </TouchableOpacity>

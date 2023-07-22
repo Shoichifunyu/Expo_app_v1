@@ -8,7 +8,7 @@
       "distribution": "internal",
       "ios": {
         "resourceClass": "m-medium"
-      }
+        }
     },
     "preview": {
       "distribution": "internal",
@@ -19,6 +19,10 @@
     "production": {
       "ios": {
         "resourceClass": "m-medium"
+      },
+      "android":{
+        "distribution": "internal",
+        "credentialsSource": "local"
       }
     }
   },
