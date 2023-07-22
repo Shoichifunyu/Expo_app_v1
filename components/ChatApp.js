@@ -7,8 +7,6 @@ import io from 'socket.io-client';
 import _ from 'lodash';
 import { RadioButton } from 'react-native-paper';
 import Checkbox from 'expo-checkbox';
-import { ExpoConfig, ConfigContext } from '@expo/config'
-// import RNFetchBlob from 'react-native-blob-util'; // or react-native-blob-util
 import * as FileSystem from 'expo-file-system';
 
 export function ChatForm(props) {
