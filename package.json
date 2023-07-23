@@ -7,8 +7,7 @@
     "start:android": "react-native run-android",
     "start:ios": "react-native run-ios",
     "start:web": "webpack-dev-server --content-base web/public/ -d --config ./web/webpack.config.js --inline --hot --colors",
-    "test": "jest",
-    "postinstall": "npx patch-package"
+    "test": "jest"
   },
   "expo": {
     "autolinking": {
